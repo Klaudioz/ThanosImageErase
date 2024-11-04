@@ -1,8 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // API URL detection for development/production environments
-    const API_URL = window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1')
-        ? ''  // Use relative URLs for local development
-        : 'https://thanos-snap.replit.app';  // Use absolute URLs for production
+    // Use relative URLs for all environments
+    const API_URL = '';
 
     // Theme Toggle Functionality
     const themeToggle = document.getElementById("theme-toggle");
@@ -81,29 +79,24 @@ document.addEventListener("DOMContentLoaded", () => {
             uploadStatus.textContent = "Uploading...";
             uploadStatus.className = "";
 
-            const response = await fetch(`${API_URL}/upload`, {
+            const response = await fetch('/upload', {
                 method: "POST",
-                body: formData
+                body: formData,
+                credentials: 'same-origin'
             });
 
-            let result;
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
-                result = await response.json();
-            } else {
-                throw new Error("Server response was not JSON");
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            if (!response.ok) {
-                throw new Error(result.error || `HTTP error! status: ${response.status}`);
-            }
+            const result = await response.json();
 
             if (result.success) {
                 uploadStatus.textContent = "Upload successful!";
                 uploadStatus.className = "success";
                 
                 currentFilename = result.filename;
-                displayedImage.src = `${API_URL}/public/uploads/${result.filename}`;
+                displayedImage.src = `/public/uploads/${result.filename}`;
                 displayedImage.style.display = "block";
                 displayedImage.style.opacity = "1";
                 displayedImage.style.transform = "scale(1)";
@@ -118,37 +111,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    async function handleDrop(e) {
-        preventDefaults(e);
-        unhighlight();
-
-        const dt = e.dataTransfer;
-        const file = dt.files[0];
-        
-        if (file) {
-            await uploadFile(file);
-        }
-    }
-
     async function deleteImage() {
         if (!currentFilename) return;
 
         try {
-            const response = await fetch(`${API_URL}/delete/${currentFilename}`, {
-                method: 'DELETE'
+            const response = await fetch(`/delete/${currentFilename}`, {
+                method: 'DELETE',
+                credentials: 'same-origin'
             });
 
-            let result;
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
-                result = await response.json();
-            } else {
-                throw new Error("Server response was not JSON");
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            if (!response.ok) {
-                throw new Error(result.error || `HTTP error! status: ${response.status}`);
-            }
+            const result = await response.json();
 
             if (result.success) {
                 displayedImage.style.display = "none";
@@ -221,4 +197,16 @@ document.addEventListener("DOMContentLoaded", () => {
         deleteButton.classList.add("hidden");
         requestAnimationFrame(animate);
     });
+
+    async function handleDrop(e) {
+        preventDefaults(e);
+        unhighlight();
+
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+        
+        if (file) {
+            await uploadFile(file);
+        }
+    }
 });
