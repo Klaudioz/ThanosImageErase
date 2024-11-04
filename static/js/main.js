@@ -9,6 +9,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const mainContainer = document.querySelector(".container");
     const uploadForm = document.getElementById("upload-form");
     const uploadStatus = document.getElementById("upload-status");
+    const fileInput = document.getElementById("file-input");
+    const uploadContainer = document.getElementById("upload-container");
+    const previewContainer = document.querySelector(".preview-container");
+    const previewImage = document.getElementById("preview-image");
 
     let isAnimating = false;
     let currentFilename = null;
@@ -23,6 +27,68 @@ document.addEventListener("DOMContentLoaded", () => {
         safariWarning.classList.remove("hidden");
         return;
     }
+
+    // Preview functionality
+    function showPreview(file) {
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // File input change handler
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        showPreview(file);
+    });
+
+    // Drag and Drop handlers
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function highlight() {
+        uploadContainer.classList.add('drag-over');
+    }
+
+    function unhighlight() {
+        uploadContainer.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+        preventDefaults(e);
+        unhighlight();
+
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+
+        if (file && file.type.startsWith('image/')) {
+            fileInput.files = dt.files;
+            showPreview(file);
+        } else {
+            uploadStatus.textContent = "Please drop an image file";
+            uploadStatus.className = "error";
+        }
+    }
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadContainer.addEventListener(eventName, preventDefaults, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadContainer.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadContainer.addEventListener(eventName, unhighlight, false);
+    });
+
+    uploadContainer.addEventListener('drop', handleDrop, false);
 
     function setRandomSeed() {
         const randomSeed = Math.floor(Math.random() * 1000);
@@ -47,9 +113,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 displayedImage.style.display = "none";
                 currentFilename = null;
                 deleteButton.classList.add("hidden");
+                // Reset the preview
+                previewContainer.style.display = 'none';
+                previewImage.src = '';
             }
         } catch (error) {
             console.error('Error deleting image:', error);
+            uploadStatus.textContent = "Error deleting image";
+            uploadStatus.className = "error";
         }
     }
 
@@ -96,7 +167,6 @@ document.addEventListener("DOMContentLoaded", () => {
     uploadForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         
-        const fileInput = document.getElementById("file-input");
         const file = fileInput.files[0];
         
         if (!file) {
@@ -109,6 +179,9 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append("file", file);
 
         try {
+            uploadStatus.textContent = "Uploading...";
+            uploadStatus.className = "";
+
             const response = await fetch("/upload", {
                 method: "POST",
                 body: formData
@@ -126,8 +199,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 displayedImage.style.display = "block";
                 deleteButton.classList.remove("hidden");
                 
-                // Reset form
+                // Reset form and preview
                 uploadForm.reset();
+                previewContainer.style.display = 'none';
+                previewImage.src = '';
             } else {
                 uploadStatus.textContent = result.error || "Upload failed";
                 uploadStatus.className = "error";

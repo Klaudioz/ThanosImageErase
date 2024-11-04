@@ -22,11 +22,15 @@
     <h1>Image Upload with Thanos Effect</h1>
     
     <!-- Upload Form -->
-    <div class="upload-container">
+    <div class="upload-container" id="upload-container">
         <form id="upload-form">
             <input type="file" id="file-input" accept="image/*" required>
+            <label for="file-input">Choose an image</label>
             <button type="submit">Upload Image</button>
         </form>
+        <div class="preview-container">
+            <img id="preview-image" src="" alt="Preview">
+        </div>
         <div id="upload-status"></div>
     </div>
 
