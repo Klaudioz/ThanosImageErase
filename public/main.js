@@ -76,14 +76,14 @@ document.addEventListener("DOMContentLoaded", () => {
             uploadStatus.textContent = "Uploading...";
             uploadStatus.className = "";
 
-            const response = await fetch("https://thanos-snap.replit.app/upload", {
+            const response = await fetch("/upload", {
                 method: "POST",
-                body: formData,
-                mode: 'cors'
+                body: formData
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
             }
 
             const result = await response.json();
@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 uploadStatus.className = "success";
                 
                 currentFilename = result.filename;
-                displayedImage.src = `https://thanos-snap.replit.app/public/uploads/${result.filename}`;
+                displayedImage.src = `/public/uploads/${result.filename}`;
                 displayedImage.style.display = "block";
                 displayedImage.style.opacity = "1";
                 displayedImage.style.transform = "scale(1)";
@@ -124,13 +124,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!currentFilename) return;
 
         try {
-            const response = await fetch(`https://thanos-snap.replit.app/delete/${currentFilename}`, {
-                method: 'DELETE',
-                mode: 'cors'
+            const response = await fetch(`/delete/${currentFilename}`, {
+                method: 'DELETE'
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
             }
 
             const result = await response.json();

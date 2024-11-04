@@ -6,7 +6,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, resources={
     r"/*": {
-        "origins": ["https://thanos-snap.replit.app"],
+        "origins": ["*"],  # Allow all origins for development
         "methods": ["GET", "POST", "DELETE"],
         "allow_headers": ["Content-Type"]
     }
