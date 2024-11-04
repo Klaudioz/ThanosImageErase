@@ -77,13 +77,19 @@ body {
 .image-container {
     margin: 20px 0;
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
 }
 
 #displayed-image {
     max-width: 100%;
+    max-height: 70vh;
     height: auto;
     filter: url(#dissolve-filter);
     transition: transform 0.3s ease;
+    object-fit: contain;
 }
 
 #delete-image {

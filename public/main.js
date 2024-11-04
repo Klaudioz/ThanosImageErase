@@ -91,6 +91,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 currentFilename = result.filename;
                 displayedImage.src = `/public/uploads/${result.filename}`;
                 displayedImage.style.display = "block";
+                displayedImage.style.opacity = "1";
+                displayedImage.style.transform = "scale(1)";
                 deleteButton.classList.remove("hidden");
             } else {
                 uploadStatus.textContent = result.error || "Upload failed";
@@ -151,28 +153,34 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isAnimating) return;
         
         isAnimating = true;
-        const duration = 1000;
+        const duration = 2000; // Increased from 1000ms to 2000ms
         const startTime = performance.now();
+        const maxDisplacementScale = 1500; // Adjusted for smoother effect
 
-        function easeOutCubic(t) {
-            return 1 - Math.pow(1 - t, 3);
+        function easeInOutCubic(t) {
+            return t < 0.5 
+                ? 4 * t * t * t 
+                : 1 - Math.pow(-2 * t + 2, 3) / 2;
         }
 
         function animate(currentTime) {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            const easedProgress = easeOutCubic(progress);
+            const easedProgress = easeInOutCubic(progress);
 
-            const scale = easedProgress * 1000;
+            const scale = easedProgress * maxDisplacementScale;
             displacementMap.setAttribute("scale", scale);
 
-            const scaleFactor = 1 + 0.1 * easedProgress;
+            // Smoother scale animation
+            const scaleFactor = 1 + 0.15 * easedProgress;
             displayedImage.style.transform = `scale(${scaleFactor})`;
 
-            if (progress < 0.5) {
+            // Smoother opacity transition
+            if (progress < 0.6) {
                 displayedImage.style.opacity = 1;
             } else {
-                displayedImage.style.opacity = 1 - (progress - 0.5) * 2;
+                const opacityProgress = (progress - 0.6) / 0.4;
+                displayedImage.style.opacity = 1 - easeInOutCubic(opacityProgress);
             }
 
             if (progress < 1) {
