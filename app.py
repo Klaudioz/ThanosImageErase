@@ -1,8 +1,10 @@
 import os
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 app.secret_key = 'your-secret-key-here'
 
 # Configure upload folder

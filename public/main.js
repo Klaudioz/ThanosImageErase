@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
             uploadStatus.textContent = "Uploading...";
             uploadStatus.className = "";
 
-            const response = await fetch("/upload", {
+            const response = await fetch("https://thanos-snap.replit.app/upload", {
                 method: "POST",
                 body: formData
             });
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 // Display the uploaded image
                 currentFilename = result.filename;
-                displayedImage.src = `/public/uploads/${result.filename}`;
+                displayedImage.src = `https://thanos-snap.replit.app/public/uploads/${result.filename}`;
                 displayedImage.style.display = "block";
                 displayedImage.style.opacity = "1";
                 displayedImage.style.transform = "scale(1)";
@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!currentFilename) return;
 
         try {
-            const response = await fetch(`/delete/${currentFilename}`, {
+            const response = await fetch(`https://thanos-snap.replit.app/delete/${currentFilename}`, {
                 method: 'DELETE'
             });
 
