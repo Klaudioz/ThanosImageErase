@@ -6,7 +6,7 @@ app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'
 
 # Configure upload folder
-UPLOAD_FOLDER = 'static/uploads'
+UPLOAD_FOLDER = 'public/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 if not os.path.exists(UPLOAD_FOLDER):
@@ -26,6 +26,10 @@ def index():
         if allowed_file(filename):
             images.append(filename)
     return render_template('index.html', images=images)
+
+@app.route('/public/<path:filename>')
+def serve_public(filename):
+    return send_from_directory('public', filename)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():

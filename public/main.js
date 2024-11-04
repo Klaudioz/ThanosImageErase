@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let isAnimating = false;
     let currentFilename = null;
 
+    // Check if the browser is Safari
     function isSafariBrowser() {
         const ua = navigator.userAgent.toLowerCase();
         return ua.includes("safari") && !ua.includes("chrome") && !ua.includes("android");
@@ -65,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 // Display the uploaded image
                 currentFilename = result.filename;
-                displayedImage.src = `/static/uploads/${result.filename}`;
+                displayedImage.src = `/public/uploads/${result.filename}`;
                 displayedImage.style.display = "block";
                 deleteButton.classList.remove("hidden");
             } else {
@@ -91,39 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        uploadContainer.addEventListener(eventName, preventDefaults, false);
-    });
-
-    ['dragenter', 'dragover'].forEach(eventName => {
-        uploadContainer.addEventListener(eventName, highlight, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        uploadContainer.addEventListener(eventName, unhighlight, false);
-    });
-
-    uploadContainer.addEventListener('drop', handleDrop, false);
-
-    function setRandomSeed() {
-        const randomSeed = Math.floor(Math.random() * 1000);
-        bigNoise.setAttribute("seed", randomSeed);
-    }
-
-    function easeOutCubic(t) {
-        return 1 - Math.pow(1 - t, 3);
-    }
-
-    const maxDisplacementScale = 2000;
-
     async function deleteImage() {
         if (!currentFilename) return;
-        
+
         try {
             const response = await fetch(`/delete/${currentFilename}`, {
                 method: 'DELETE'
             });
-            
+
             if (response.ok) {
                 displayedImage.style.display = "none";
                 currentFilename = null;
@@ -131,48 +107,60 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } catch (error) {
             console.error('Error deleting image:', error);
-            uploadStatus.textContent = "Error deleting image";
-            uploadStatus.className = "error";
         }
     }
 
-    deleteButton.addEventListener("click", async () => {
-        if (isAnimating || displayedImage.style.display === "none") return;
+    // Event Listeners
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadContainer.addEventListener(eventName, preventDefaults);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadContainer.addEventListener(eventName, highlight);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadContainer.addEventListener(eventName, unhighlight);
+    });
+
+    uploadContainer.addEventListener('drop', handleDrop);
+    deleteButton.addEventListener('click', () => {
+        if (isAnimating) return;
+        
         isAnimating = true;
-
-        setRandomSeed();
-        deleteButton.classList.add("hidden");
-
         const duration = 1000;
         const startTime = performance.now();
+
+        function easeOutCubic(t) {
+            return 1 - Math.pow(1 - t, 3);
+        }
 
         function animate(currentTime) {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
             const easedProgress = easeOutCubic(progress);
 
-            const displacementScale = easedProgress * maxDisplacementScale;
-            displacementMap.setAttribute("scale", displacementScale);
+            const scale = easedProgress * 1000;
+            displacementMap.setAttribute("scale", scale);
 
             const scaleFactor = 1 + 0.1 * easedProgress;
             displayedImage.style.transform = `scale(${scaleFactor})`;
 
-            let opacity = progress < 0.5 ? 1 : 1 - ((progress - 0.5) / 0.5);
-            displayedImage.style.opacity = opacity;
+            if (progress < 0.5) {
+                displayedImage.style.opacity = 1;
+            } else {
+                displayedImage.style.opacity = 1 - (progress - 0.5) * 2;
+            }
 
             if (progress < 1) {
                 requestAnimationFrame(animate);
             } else {
-                setTimeout(async () => {
-                    await deleteImage();
-                    displayedImage.style.transform = "scale(1)";
-                    displayedImage.style.opacity = "1";
-                    displacementMap.setAttribute("scale", "0");
-                    isAnimating = false;
-                }, 0);
+                deleteImage();
+                isAnimating = false;
             }
         }
 
+        deleteButton.classList.add("hidden");
         requestAnimationFrame(animate);
     });
 });
