@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // API URL detection for Replit domain
-    const API_URL = window.location.hostname.includes('replit.app')
-        ? window.location.protocol + '//' + window.location.hostname.replace('.replit.app', '.repl.co')
-        : '';
+    // API URL detection for local vs production environment
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname.includes('127.0.0.1')
+        ? ''
+        : 'https://thanos-snap.repl.co';
 
     // Theme Toggle Functionality
     const themeToggle = document.getElementById("theme-toggle");
@@ -80,7 +80,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const fetchOptions = {
             method: "POST",
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Origin': 'https://thanos-snap.replit.app'
             },
             body: formData,
             credentials: 'include'
@@ -124,7 +125,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const fetchOptions = {
             method: 'DELETE',
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Origin': 'https://thanos-snap.replit.app'
             },
             credentials: 'include'
         };
