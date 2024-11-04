@@ -63,9 +63,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 uploadStatus.textContent = "Upload successful!";
                 uploadStatus.className = "success";
                 
-                // Display the uploaded image with corrected path
+                // Display the uploaded image with updated path
                 currentFilename = result.filename;
-                displayedImage.src = `/static/uploads/${result.filename}`;
+                displayedImage.src = `/public/uploads/${result.filename}`;
                 displayedImage.style.display = "block";
                 deleteButton.classList.remove("hidden");
             } else {
@@ -128,14 +128,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 displayedImage.style.display = "none";
                 currentFilename = null;
                 deleteButton.classList.add("hidden");
-                return true;
             }
-            return false;
         } catch (error) {
             console.error('Error deleting image:', error);
             uploadStatus.textContent = "Error deleting image";
             uploadStatus.className = "error";
-            return false;
         }
     }
 
@@ -167,12 +164,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 requestAnimationFrame(animate);
             } else {
                 setTimeout(async () => {
-                    const deleted = await deleteImage();
-                    if (deleted) {
-                        displayedImage.style.transform = "scale(1)";
-                        displayedImage.style.opacity = "1";
-                        displacementMap.setAttribute("scale", "0");
-                    }
+                    await deleteImage();
+                    displayedImage.style.transform = "scale(1)";
+                    displayedImage.style.opacity = "1";
+                    displacementMap.setAttribute("scale", "0");
                     isAnimating = false;
                 }, 0);
             }
