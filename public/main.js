@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     // API URL detection for Replit domain
-    const API_URL = window.location.hostname.includes('replit.app') 
-        ? 'https://' + window.location.hostname
+    const API_URL = window.location.hostname.includes('replit.app')
+        ? window.location.protocol + '//' + window.location.hostname.replace('.replit.app', '.repl.co')
         : '';
 
     // Theme Toggle Functionality
@@ -77,15 +77,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const formData = new FormData();
         formData.append("file", file);
 
+        const fetchOptions = {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json'
+            },
+            body: formData,
+            credentials: 'include'
+        };
+
         try {
             uploadStatus.textContent = "Uploading...";
             uploadStatus.className = "";
 
-            const response = await fetch(`${API_URL}/upload`, {
-                method: "POST",
-                body: formData,
-                credentials: 'include'
-            });
+            const response = await fetch(`${API_URL}/upload`, fetchOptions);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -116,11 +121,16 @@ document.addEventListener("DOMContentLoaded", () => {
     async function deleteImage() {
         if (!currentFilename) return;
 
+        const fetchOptions = {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json'
+            },
+            credentials: 'include'
+        };
+
         try {
-            const response = await fetch(`${API_URL}/delete/${currentFilename}`, {
-                method: 'DELETE',
-                credentials: 'include'
-            });
+            const response = await fetch(`${API_URL}/delete/${currentFilename}`, fetchOptions);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -132,6 +142,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 displayedImage.style.display = "none";
                 currentFilename = null;
                 deleteButton.classList.add("hidden");
+                uploadStatus.textContent = "Image deleted successfully!";
+                uploadStatus.className = "success";
             } else {
                 throw new Error(result.error || "Delete failed");
             }
@@ -211,4 +223,18 @@ document.addEventListener("DOMContentLoaded", () => {
             await uploadFile(file);
         }
     }
+
+    // Add click-to-upload functionality
+    uploadContainer.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                uploadFile(file);
+            }
+        };
+        input.click();
+    });
 });
