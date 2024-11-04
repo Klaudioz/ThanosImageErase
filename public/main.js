@@ -1,4 +1,27 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // Theme Toggle Functionality
+    const themeToggle = document.getElementById("theme-toggle");
+    const htmlElement = document.documentElement;
+    const themeIcon = themeToggle.querySelector("i");
+
+    // Get theme from localStorage or default to dark
+    const currentTheme = localStorage.getItem("theme") || "dark";
+    htmlElement.setAttribute("data-theme", currentTheme);
+    updateThemeIcon(currentTheme);
+
+    function updateThemeIcon(theme) {
+        themeIcon.className = theme === "dark" ? "fas fa-sun" : "fas fa-moon";
+    }
+
+    themeToggle.addEventListener("click", () => {
+        const currentTheme = htmlElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        
+        htmlElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+        updateThemeIcon(newTheme);
+    });
+
     // Selecting DOM Elements
     const deleteButton = document.getElementById("delete-image");
     const displayedImage = document.getElementById("displayed-image");
