@@ -63,9 +63,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 uploadStatus.textContent = "Upload successful!";
                 uploadStatus.className = "success";
                 
-                // Display the uploaded image with updated path
+                // Display the uploaded image
                 currentFilename = result.filename;
-                displayedImage.src = `/public/uploads/${result.filename}`;
+                displayedImage.src = `/static/uploads/${result.filename}`;
                 displayedImage.style.display = "block";
                 deleteButton.classList.remove("hidden");
             } else {
