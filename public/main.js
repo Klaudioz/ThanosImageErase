@@ -78,8 +78,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const response = await fetch("https://thanos-snap.replit.app/upload", {
                 method: "POST",
-                body: formData
+                body: formData,
+                mode: 'cors'
             });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
             const result = await response.json();
 
@@ -87,7 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 uploadStatus.textContent = "Upload successful!";
                 uploadStatus.className = "success";
                 
-                // Display the uploaded image
                 currentFilename = result.filename;
                 displayedImage.src = `https://thanos-snap.replit.app/public/uploads/${result.filename}`;
                 displayedImage.style.display = "block";
@@ -95,11 +99,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 displayedImage.style.transform = "scale(1)";
                 deleteButton.classList.remove("hidden");
             } else {
-                uploadStatus.textContent = result.error || "Upload failed";
-                uploadStatus.className = "error";
+                throw new Error(result.error || "Upload failed");
             }
         } catch (error) {
-            uploadStatus.textContent = "Upload failed";
+            uploadStatus.textContent = `Upload failed: ${error.message}`;
             uploadStatus.className = "error";
             console.error("Upload error:", error);
         }
@@ -122,16 +125,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             const response = await fetch(`https://thanos-snap.replit.app/delete/${currentFilename}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                mode: 'cors'
             });
 
-            if (response.ok) {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.success) {
                 displayedImage.style.display = "none";
                 currentFilename = null;
                 deleteButton.classList.add("hidden");
+            } else {
+                throw new Error(result.error || "Delete failed");
             }
         } catch (error) {
             console.error('Error deleting image:', error);
+            uploadStatus.textContent = `Delete failed: ${error.message}`;
+            uploadStatus.className = "error";
         }
     }
 
@@ -153,9 +167,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isAnimating) return;
         
         isAnimating = true;
-        const duration = 2000; // Increased from 1000ms to 2000ms
+        const duration = 2000;
         const startTime = performance.now();
-        const maxDisplacementScale = 1500; // Adjusted for smoother effect
+        const maxDisplacementScale = 1500;
 
         function easeInOutCubic(t) {
             return t < 0.5 
@@ -171,11 +185,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const scale = easedProgress * maxDisplacementScale;
             displacementMap.setAttribute("scale", scale);
 
-            // Smoother scale animation
             const scaleFactor = 1 + 0.15 * easedProgress;
             displayedImage.style.transform = `scale(${scaleFactor})`;
 
-            // Smoother opacity transition
             if (progress < 0.6) {
                 displayedImage.style.opacity = 1;
             } else {
