@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Use relative URLs for all environments
-    const API_URL = '';
+    // API URL detection for Replit domain
+    const API_URL = window.location.hostname.includes('replit.app') 
+        ? 'https://' + window.location.hostname
+        : '';
 
     // Theme Toggle Functionality
     const themeToggle = document.getElementById("theme-toggle");
@@ -79,10 +81,10 @@ document.addEventListener("DOMContentLoaded", () => {
             uploadStatus.textContent = "Uploading...";
             uploadStatus.className = "";
 
-            const response = await fetch('/upload', {
+            const response = await fetch(`${API_URL}/upload`, {
                 method: "POST",
                 body: formData,
-                credentials: 'same-origin'
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -96,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 uploadStatus.className = "success";
                 
                 currentFilename = result.filename;
-                displayedImage.src = `/public/uploads/${result.filename}`;
+                displayedImage.src = `${API_URL}/public/uploads/${result.filename}`;
                 displayedImage.style.display = "block";
                 displayedImage.style.opacity = "1";
                 displayedImage.style.transform = "scale(1)";
@@ -115,9 +117,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!currentFilename) return;
 
         try {
-            const response = await fetch(`/delete/${currentFilename}`, {
+            const response = await fetch(`${API_URL}/delete/${currentFilename}`, {
                 method: 'DELETE',
-                credentials: 'same-origin'
+                credentials: 'include'
             });
 
             if (!response.ok) {

@@ -6,19 +6,20 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app, resources={
     r"/*": {
-        "origins": ["*"],  # Allow all origins for development
+        "origins": ["*"],
         "methods": ["GET", "POST", "DELETE"],
-        "allow_headers": ["Content-Type"]
+        "allow_headers": ["Content-Type"],
+        "supports_credentials": True
     }
 })
 app.secret_key = 'your-secret-key-here'
 
 # Configure upload folder
-UPLOAD_FOLDER = 'public/uploads'
+UPLOAD_FOLDER = os.path.join('public', 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+# Create upload folder if it doesn't exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
@@ -28,12 +29,7 @@ def allowed_file(filename):
 
 @app.route('/')
 def index():
-    # Get list of uploaded images
-    images = []
-    for filename in os.listdir(app.config['UPLOAD_FOLDER']):
-        if allowed_file(filename):
-            images.append(filename)
-    return render_template('index.html', images=images)
+    return render_template('index.html')
 
 @app.route('/public/<path:filename>')
 def serve_public(filename):
@@ -41,23 +37,24 @@ def serve_public(filename):
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    try:
-        if 'file' not in request.files:
-            return jsonify({'error': 'No file part'}), 400
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({'error': 'No selected file'}), 400
-        
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        try:
             file.save(file_path)
             return jsonify({'success': True, 'filename': filename})
-        
-        return jsonify({'error': 'Invalid file type'}), 400
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    return jsonify({'error': 'Invalid file type'}), 400
 
 @app.route('/delete/<filename>', methods=['DELETE'])
 def delete_file(filename):
