@@ -7,12 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const bigNoise = dissolveFilter.querySelector('feTurbulence[result="bigNoise"]');
     const safariWarning = document.querySelector(".safari-warning");
     const mainContainer = document.querySelector(".container");
-    const uploadForm = document.getElementById("upload-form");
-    const uploadStatus = document.getElementById("upload-status");
-    const fileInput = document.getElementById("file-input");
     const uploadContainer = document.getElementById("upload-container");
-    const previewContainer = document.querySelector(".preview-container");
-    const previewImage = document.getElementById("preview-image");
+    const uploadStatus = document.getElementById("upload-status");
 
     let isAnimating = false;
     let currentFilename = null;
@@ -28,24 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Preview functionality
-    function showPreview(file) {
-        if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                previewImage.src = e.target.result;
-                previewContainer.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-    // File input change handler
-    fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        showPreview(file);
-    });
-
     // Drag and Drop handlers
     function preventDefaults(e) {
         e.preventDefault();
@@ -60,19 +38,56 @@ document.addEventListener("DOMContentLoaded", () => {
         uploadContainer.classList.remove('drag-over');
     }
 
-    function handleDrop(e) {
+    async function uploadFile(file) {
+        if (!file || !file.type.startsWith('image/')) {
+            uploadStatus.textContent = "Please drop an image file";
+            uploadStatus.className = "error";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            uploadStatus.textContent = "Uploading...";
+            uploadStatus.className = "";
+
+            const response = await fetch("/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                uploadStatus.textContent = "Upload successful!";
+                uploadStatus.className = "success";
+                
+                // Display the uploaded image
+                currentFilename = result.filename;
+                displayedImage.src = `/static/uploads/${result.filename}`;
+                displayedImage.style.display = "block";
+                deleteButton.classList.remove("hidden");
+            } else {
+                uploadStatus.textContent = result.error || "Upload failed";
+                uploadStatus.className = "error";
+            }
+        } catch (error) {
+            uploadStatus.textContent = "Upload failed";
+            uploadStatus.className = "error";
+            console.error("Upload error:", error);
+        }
+    }
+
+    async function handleDrop(e) {
         preventDefaults(e);
         unhighlight();
 
         const dt = e.dataTransfer;
         const file = dt.files[0];
-
-        if (file && file.type.startsWith('image/')) {
-            fileInput.files = dt.files;
-            showPreview(file);
-        } else {
-            uploadStatus.textContent = "Please drop an image file";
-            uploadStatus.className = "error";
+        
+        if (file) {
+            await uploadFile(file);
         }
     }
 
@@ -113,9 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 displayedImage.style.display = "none";
                 currentFilename = null;
                 deleteButton.classList.add("hidden");
-                // Reset the preview
-                previewContainer.style.display = 'none';
-                previewImage.src = '';
             }
         } catch (error) {
             console.error('Error deleting image:', error);
@@ -162,55 +174,5 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         requestAnimationFrame(animate);
-    });
-
-    uploadForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        
-        const file = fileInput.files[0];
-        
-        if (!file) {
-            uploadStatus.textContent = "Please select a file";
-            uploadStatus.className = "error";
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append("file", file);
-
-        try {
-            uploadStatus.textContent = "Uploading...";
-            uploadStatus.className = "";
-
-            const response = await fetch("/upload", {
-                method: "POST",
-                body: formData
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                uploadStatus.textContent = "Upload successful!";
-                uploadStatus.className = "success";
-                
-                // Display the uploaded image
-                currentFilename = result.filename;
-                displayedImage.src = `/static/uploads/${result.filename}`;
-                displayedImage.style.display = "block";
-                deleteButton.classList.remove("hidden");
-                
-                // Reset form and preview
-                uploadForm.reset();
-                previewContainer.style.display = 'none';
-                previewImage.src = '';
-            } else {
-                uploadStatus.textContent = result.error || "Upload failed";
-                uploadStatus.className = "error";
-            }
-        } catch (error) {
-            uploadStatus.textContent = "Upload failed";
-            uploadStatus.className = "error";
-            console.error("Upload error:", error);
-        }
     });
 });

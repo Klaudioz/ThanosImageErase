@@ -27,6 +27,10 @@ body {
     border-radius: 8px;
     transition: all 0.3s ease;
     position: relative;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .upload-container.drag-over {
@@ -36,22 +40,10 @@ body {
 }
 
 .upload-container::before {
-    content: 'Drag and drop images here or click to select';
+    content: 'Drag and drop images here';
     display: block;
-    margin-bottom: 1rem;
     color: #888;
-}
-
-.preview-container {
-    margin: 1rem 0;
-    max-width: 300px;
-    margin: 1rem auto;
-    display: none;
-}
-
-.preview-container img {
-    max-width: 100%;
-    border-radius: 8px;
+    font-size: 1.2rem;
 }
 
 .image-container {
@@ -74,8 +66,9 @@ button {
     padding: 0.5rem 1rem;
     border-radius: 4px;
     cursor: pointer;
-    margin: 0.5rem;
     transition: opacity 0.3s ease;
+    margin: 1rem auto;
+    display: block;
 }
 
 button:hover {
@@ -83,9 +76,7 @@ button:hover {
 }
 
 #delete-image {
-    position: absolute;
-    bottom: 1rem;
-    right: 1rem;
+    margin-top: 1rem;
 }
 
 .hidden {
@@ -104,7 +95,10 @@ button:hover {
 }
 
 #upload-status {
-    margin-top: 1rem;
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
     padding: 0.5rem;
 }
 
@@ -114,23 +108,4 @@ button:hover {
 
 .success {
     color: #69f0ae;
-}
-
-#file-input {
-    display: none;
-}
-
-.upload-container label {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background-color: var(--accent-color);
-    color: var(--text-color);
-    border-radius: 4px;
-    cursor: pointer;
-    margin: 0.5rem;
-    transition: opacity 0.3s ease;
-}
-
-.upload-container label:hover {
-    opacity: 0.8;
 }
