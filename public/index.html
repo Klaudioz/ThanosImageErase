@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload with Thanos Effect</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <button class="theme-toggle" id="theme-toggle">
+        <i class="fas fa-sun"></i>
+    </button>
+
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+        <defs>
+            <filter id="dissolve-filter" x="-200%" y="-200%" width="500%" height="500%" color-interpolation-filters="sRGB" overflow="visible">
+                <feTurbulence type="fractalNoise" baseFrequency="0.004" numOctaves="1" result="bigNoise" />
+                <feComponentTransfer in="bigNoise" result="bigNoiseAdjusted">
+                    <feFuncR type="linear" slope="3" intercept="-1" />
+                    <feFuncG type="linear" slope="3" intercept="-1" />
+                </feComponentTransfer>
+                <feTurbulence type="fractalNoise" baseFrequency="1" numOctaves="1" result="fineNoise" />
+                <feMerge result="mergedNoise">
+                    <feMergeNode in="bigNoiseAdjusted" />
+                    <feMergeNode in="fineNoise" />
+                </feMerge>
+                <feDisplacementMap in="SourceGraphic" in2="mergedNoise" scale="0" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
+
+    <div class="container">
+        <h1>Image Upload with Thanos Effect</h1>
+        
+        <!-- Upload Container -->
+        <div class="upload-container" id="upload-container">
+            <div id="upload-status"></div>
+        </div>
+
+        <!-- Image Container -->
+        <div class="image-container">
+            <img id="displayed-image" src="" alt="Selected Image" style="display: none;">
+        </div>
+        
+        <!-- Delete Button -->
+        <button id="delete-image" class="hidden">Delete Image</button>
+
+        <!-- Support Message -->
+        <p class="support-text">
+            Upload your images and watch them dissolve with a Thanos-like effect!
+        </p>
+    </div>
+
+    <!-- Safari Warning Message -->
+    <div class="safari-warning hidden">
+        <p>⚠️ <strong>Safari is currently not supported.</strong> If you'd like to help improve Safari support, feel free to contribute to this project!</p>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
